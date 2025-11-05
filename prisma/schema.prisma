@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model StudentId {
+  id          Int         @id @default(autoincrement())
+  studentNo   String      @unique @map("student_no")
+  createTime  DateTime    @default(now()) @map("create_time")
+  generateRecords GenerateRecord[]
+
+  @@map("student_id")
+}
+
+model Config {
+  id         Int      @id @default(autoincrement())
+  poetry     Json
+  taskPrompt Json      @map("task_prompt")
+  updateTime DateTime  @default(now()) @map("update_time")
+
+  @@map("config")
+}
+
+model GenerateRecord {
+  id               Int       @id @default(autoincrement())
+  studentNo        String    @map("student_no")
+  student          StudentId @relation(fields: [studentNo], references: [studentNo])
+  promptText       String    @map("prompt_text")
+  imageNo          String    @map("image_no")
+  status           String    @default("")
+  generateTime     DateTime  @db.DateTime(0) @default(now()) @map("generate_time")
+  submitTime       DateTime? @db.DateTime(0) @map("submit_time")
+  totalTimeSeconds Int?      @map("total_time_seconds")
+
+  @@index([studentNo])
+  @@index([submitTime])
+  @@map("generate_record")
+}

@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 中国风米色宣纸底色与墨色文字 */
+  --bg-paper: #f7f3e9;
+  --text-ink: #1a1a1a;
+  --accent-primary: #8c1d1d; /* 朱砂红 */
+  --accent-secondary: #2f6f52; /* 青竹绿 */
+  --border-paper: #d8c49c; /* 宣纸边色 */
+
+  /* 保留旧变量以兼容 */
+  --background: var(--bg-paper);
+  --foreground: var(--text-ink);
 }
 
 @theme inline {
@@ -14,13 +22,50 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* 保持宣纸米色背景，避免黑色 */
+    --bg-paper: #f2ead7; /* 略深的米色，夜间也柔和 */
+    --text-ink: #1a1a1a; /* 墨色，仍保持高对比可读 */
+    --accent-primary: #8c1d1d;
+    --accent-secondary: #2f6f52;
+    --border-paper: #d8c49c;
+    --background: var(--bg-paper);
+    --foreground: var(--text-ink);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* 中文 serif 更具古典气质，回退到系统中文字体保证清晰度 */
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", "STSong", "PingFang SC", "Microsoft YaHei", "Source Han Serif SC", serif;
+  line-height: 1.75;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 标题使用楷体风格，更贴近中国风美学 */
+h1, h2, h3 {
+  font-family: "KaiTi", "Kaiti SC", "STKaiti", "Noto Serif SC", serif;
+  letter-spacing: 0.5px;
+}
+
+/* 页面卡片统一宣纸边色，提高整体协调性 */
+.border {
+  border-color: var(--border-paper);
+}
+
+/* 有边框且圆角的容器使用半透明底，像铺在宣纸上的模块 */
+.border.rounded {
+  background-color: rgba(255, 255, 255, 0.65);
+}
+
+/* 强调按钮的中国风主色（不强制覆盖，尽量与现有样式和谐） */
+button {
+  font-weight: 600;
+}
+
+/* 链接与按钮的聚焦可见性，确保文字清楚与可访问性 */
+:focus-visible {
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
 }
