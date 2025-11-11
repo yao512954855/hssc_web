@@ -14,7 +14,7 @@ export default function ImageGallery({ items, onSubmit }: { items: Item[]; onSub
 
   return (
     <section className="p-4">
-      <h3 className="font-semibold mb-2">选择你最喜欢的图片</h3>
+      <h3 className="font-semibold mb-2">请选择你认为最符合古诗内容的一副图片</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-2">
         {items.map((it) => (
           <div key={it.image_name} className="border rounded p-2">

@@ -70,7 +70,6 @@ export default function LearnPage() {
         <div className="border rounded">
           {poetry && <Poetry poetry={poetry} />}
         </div>
-
         <div className="border rounded">
           <TaskPrompt tasks={tasks} />
         </div>

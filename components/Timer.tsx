@@ -25,7 +25,9 @@ export default function Timer({ visible }: { visible: boolean }) {
   return (
     <div className="fixed top-2 left-1/2 -translate-x-1/2 bg-[#2f6f52]/80 text-white px-4 py-1 rounded shadow">
       <div className="flex items-center gap-3">
-        <span>当前用时：{formatTime(elapsed)}</span>
+        <span aria-hidden={!show} className={show ? '' : 'hidden'}>
+          当前用时：{formatTime(elapsed)}
+        </span>
         <button onClick={() => setShow(!show)} className="text-xs underline">
           {show ? '隐藏' : '显示'}
         </button>
