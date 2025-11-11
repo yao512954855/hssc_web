@@ -39,7 +39,10 @@ export default function LearnPage() {
       return
     }
     const data = await res.json()
-    setCurrentImages(data.filenames.map((f: string, i: number) => ({ name: f, url: data.images[i] })))
+    const bust = Date.now()
+    setCurrentImages(
+      data.filenames.map((f: string, i: number) => ({ name: f, url: `${data.images[i]}?v=${bust}` }))
+    )
     const hRes = await fetch(`/api/images/history?student_no=${studentNo}`)
     const hData = await hRes.json()
     setHistory(hData.items)

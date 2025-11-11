@@ -9,7 +9,7 @@ export default function GeneratedImages({ images }: { images: { url: string; nam
         {images.map((img) => (
           <div key={img.name} className="overflow-hidden">
             <div className="relative w-full aspect-[4/3]">
-              <Image src={img.url} alt={img.name} fill className="object-cover transition-transform duration-200 hover:scale-110" />
+              <Image src={img.url} alt={img.name} fill unoptimized className="object-cover transition-transform duration-200 hover:scale-110" />
             </div>
             <p className="text-sm mt-1 text-center">{img.name}</p>
           </div>

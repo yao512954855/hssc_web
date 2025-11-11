@@ -31,10 +31,12 @@ export default function ImageGallery({ items, onSubmit }: { items: Item[]; onSub
                 src={`/generated-images/${it.image_name.split('_')[0]}/${it.image_name}`}
                 alt={it.image_name}
                 fill
+                unoptimized
                 className="object-cover"
               />
               <button
-                onClick={() => toggle(it.image_name)}
+                onClick={(e) => { e.stopPropagation(); toggle(it.image_name) }}
+                onKeyDown={(e) => { e.stopPropagation() }}
                 className={`absolute bottom-2 right-2 px-3 py-2 text-sm rounded shadow ${selected === it.image_name ? 'bg-red-600 text-white' : 'bg-black/60 text-white'}`}
                 aria-label={`选择 ${it.image_name}`}
               >
@@ -59,6 +61,7 @@ export default function ImageGallery({ items, onSubmit }: { items: Item[]; onSub
               src={`/generated-images/${preview.split('_')[0]}/${preview}`}
               alt={preview}
               fill
+              unoptimized
               className="object-contain"
               sizes="(max-width: 1000px) 92vw, 1000px"
             />

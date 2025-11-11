@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import sharp from 'sharp'
 
 type GenerateResult = { filenames: string[]; filepaths: string[]; urls: string[] }
 
@@ -9,7 +10,11 @@ async function downloadToFile(url: string, dest: string): Promise<void> {
   const ct = res.headers.get('content-type') || ''
   if (!ct.startsWith('image/')) throw new Error(`Not an image content-type for ${url}: ${ct}`)
   const buf = Buffer.from(await res.arrayBuffer())
-  await fs.promises.writeFile(dest, buf)
+  // 缩放并压缩为 PNG，目标约 1MB 左右
+  await sharp(buf)
+    .resize({ width: 1000, height: 750, fit: 'inside', withoutEnlargement: true })
+    .png({ compressionLevel: 9, palette: true, effort: 10 })
+    .toFile(dest)
 }
 
 async function generateWithArk(prompt: string, count: number): Promise<Buffer[]> {
@@ -24,7 +29,7 @@ async function generateWithArk(prompt: string, count: number): Promise<Buffer[]>
     const body = {
       model: 'doubao-seedream-4-0-250828',
       prompt,
-      size: '2K',
+      size: '1K',
       response_format: 'b64_json',
       stream: false,
       n,
@@ -88,7 +93,15 @@ export async function generateImagesToPublic(studentNo: string, nextIndices: num
   try {
     // 等待豆包生成两张图片后再一次性写入并返回
     const bufs = await generateWithArk(prompt, filepaths.length)
-    await Promise.all(bufs.map((buf, idx) => fs.promises.writeFile(filepaths[idx], buf)))
+    // 缩放并压缩为 PNG，确保与 .png 扩展一致且控制文件体积
+    await Promise.all(
+      bufs.map((buf, idx) =>
+        sharp(buf)
+          .resize({ width: 1000, height: 750, fit: 'inside', withoutEnlargement: true })
+          .png({ compressionLevel: 9, palette: true, effort: 10 })
+          .toFile(filepaths[idx])
+      )
+    )
   } catch (err) {
     // Fallback to placeholder PNGs to keep class flow uninterrupted
     const placeholderUrls = [
