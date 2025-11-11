@@ -3,9 +3,17 @@ import { prisma } from '@/src/lib/prisma'
 
 function formatDate(dt?: Date | null) {
   if (!dt) return ''
-  // 使用亚洲/上海时区格式化，输出为 YYYY-MM-DD HH:MM:SS
-  // 采用 sv-SE 区域避免斜杠并确保到秒（常用技巧）
-  return dt.toLocaleString('sv-SE', { timeZone: 'Asia/Shanghai', hour12: false })
+  // 注意：数据库使用的是 MySQL DATETIME(0)，不带时区。
+  // Prisma/驱动在读取时会把其当作“本地时间”构造成 JS Date。
+  // 若此处再指定 Asia/Shanghai 进行格式化，会产生二次偏移（+8小时）。
+  // 因此这里按“原值”输出：使用 UTC getters 组装成字符串，避免任何时区转换。
+  const y = dt.getUTCFullYear()
+  const m = String(dt.getUTCMonth() + 1).padStart(2, '0')
+  const d = String(dt.getUTCDate()).padStart(2, '0')
+  const hh = String(dt.getUTCHours()).padStart(2, '0')
+  const mm = String(dt.getUTCMinutes()).padStart(2, '0')
+  const ss = String(dt.getUTCSeconds()).padStart(2, '0')
+  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
 }
 
 function formatTime(seconds?: number | null) {

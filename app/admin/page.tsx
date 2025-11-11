@@ -6,7 +6,7 @@ type PoetryType = { title: string; author: string; content: string; annotation: 
 export default function AdminRootPage() {
   const [logged, setLogged] = useState(false)
   const [password, setPassword] = useState('')
-  const [tab, setTab] = useState<'config' | 'export'>('config')
+  const [tab, setTab] = useState<'config' | 'export' | 'students'>('config')
   const [poetry, setPoetry] = useState<PoetryType>({ title: '', author: '', content: '', annotation: '' })
   const [tasks, setTasks] = useState<string[]>([])
   const [msg, setMsg] = useState('')
@@ -104,6 +104,7 @@ export default function AdminRootPage() {
           <div className="flex items-center gap-2">
             <button className={`px-3 py-1 rounded ${tab === 'config' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} onClick={() => setTab('config')}>配置</button>
             <button className={`px-3 py-1 rounded ${tab === 'export' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} onClick={() => setTab('export')}>导出</button>
+            <button className={`px-3 py-1 rounded ${tab === 'students' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} onClick={() => setTab('students')}>学生编号</button>
           </div>
 
           {tab === 'config' && (
@@ -146,8 +147,119 @@ export default function AdminRootPage() {
               {msg && <p className="text-sm text-gray-600">{msg}</p>}
             </section>
           )}
+
+          {tab === 'students' && (
+            <StudentsManager />
+          )}
         </>
       )}
     </main>
+  )
+}
+
+function StudentsManager() {
+  const [items, setItems] = useState<Array<{ id: number; student_no: string; create_time: string }>>([])
+  const [loading, setLoading] = useState(false)
+  const [newNo, setNewNo] = useState('')
+  const [msg, setMsg] = useState('')
+
+  async function refresh() {
+    setLoading(true)
+    setMsg('')
+    const res = await fetch('/api/admin/students')
+    if (res.ok) {
+      const d = await res.json()
+      setItems(d.items || [])
+    } else {
+      setMsg('加载失败')
+    }
+    setLoading(false)
+  }
+
+  async function createOne() {
+    setMsg('')
+    const res = await fetch('/api/admin/students', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ student_no: newNo.trim() }) })
+    const d = await res.json().catch(() => ({}))
+    if (res.ok) {
+      setNewNo('')
+      await refresh()
+      setMsg('新增成功')
+    } else {
+      setMsg(d.error || '新增失败')
+    }
+  }
+
+  async function updateOne(id: number, student_no: string) {
+    setMsg('')
+    const res = await fetch('/api/admin/students', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, student_no }) })
+    const d = await res.json().catch(() => ({}))
+    if (res.ok) {
+      await refresh()
+      setMsg('已更新')
+    } else {
+      setMsg(d.error || '更新失败')
+    }
+  }
+
+  async function deleteOne(id: number) {
+    if (!confirm('确定删除该编号？')) return
+    setMsg('')
+    const res = await fetch('/api/admin/students', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    const d = await res.json().catch(() => ({}))
+    if (res.ok) {
+      await refresh()
+      setMsg('已删除')
+    } else {
+      setMsg(d.error || '删除失败')
+    }
+  }
+
+  useEffect(() => {
+    refresh()
+  }, [])
+
+  return (
+    <section className="space-y-3 mt-4">
+      <h2 className="text-xl font-semibold">学生编号管理</h2>
+      <div className="flex gap-2 items-center">
+        <input value={newNo} onChange={(e) => setNewNo(e.target.value)} placeholder="新增学生编号" className="border rounded p-2" />
+        <button onClick={createOne} className="bg-blue-600 text-white px-4 py-2 rounded">新增</button>
+        <button onClick={refresh} disabled={loading} className="bg-gray-200 px-3 py-2 rounded">{loading ? '加载中...' : '刷新'}</button>
+      </div>
+      {msg && <p className="text-sm text-gray-600">{msg}</p>}
+      <div className="border rounded">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="text-left p-2">ID</th>
+              <th className="text-left p-2">学生编号</th>
+              <th className="text-left p-2">创建时间</th>
+              <th className="text-left p-2">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((it) => (
+              <tr key={it.id} className="border-t">
+                <td className="p-2">{it.id}</td>
+                <td className="p-2">
+                  <input
+                    className="border rounded p-1 w-48"
+                    defaultValue={it.student_no}
+                    onBlur={(e) => {
+                      const v = e.target.value.trim()
+                      if (v && v !== it.student_no) updateOne(it.id, v)
+                    }}
+                  />
+                </td>
+                <td className="p-2">{new Date(it.create_time).toLocaleString()}</td>
+                <td className="p-2">
+                  <button onClick={() => deleteOne(it.id)} className="bg-red-600 text-white px-3 py-1 rounded">删除</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   )
 }
